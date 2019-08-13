@@ -41,7 +41,6 @@ func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threa
 				return
 			}
 
-			//读到后，再次检查
 			if hash != mbmd.HashKey {
 				result = ConstantCode.Player_Hash_Error
 				return
