@@ -1,0 +1,5 @@
+go.sum
+bin/bigeChat.exe
+bin/bigeChat
+bin/logs
+logs
