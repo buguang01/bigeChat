@@ -4,6 +4,7 @@ import (
 	"bigeChat/ChatModels"
 	"bigeChat/Code/ConstantCode"
 	"bigeChat/Conf"
+	"bigeChat/Dal"
 	"bigeChat/Service"
 
 	"github.com/buguang01/util"
@@ -18,9 +19,12 @@ func WsEventChatPus(et event.JsonMap, wsmd *event.WebSocketModel, runobj *thread
 	threads.Try(
 		func() {
 			arr := et.GetArray("ChatLi")
+			user := wsmd.ConInfo.(Dal.UserModel)
 			for _, name := range arr {
 				chatmd := ChatModels.ChatEx.GetChat(util.ToString(name))
 				chatmd.PusAdd(wsmd)
+				user.ChatLi[chatmd.ChatName] = true
+
 			}
 			result = ConstantCode.Success
 		},
@@ -37,9 +41,11 @@ func WsEventChatCancelPus(et event.JsonMap, wsmd *event.WebSocketModel, runobj *
 	threads.Try(
 		func() {
 			arr := et.GetArray("ChatLi")
+			user := wsmd.ConInfo.(Dal.UserModel)
 			for _, name := range arr {
 				chatmd := ChatModels.ChatEx.GetChat(util.ToString(name))
 				chatmd.PusDal(wsmd)
+				delete(user.ChatLi, chatmd.ChatName)
 			}
 			result = ConstantCode.Success
 		},
@@ -62,7 +68,7 @@ func WsEventChatSendMsg(et event.JsonMap, wsmd *event.WebSocketModel, runobj *th
 			redis := Service.RedisEx.GetConn()
 			defer redis.Close()
 			msg := new(ChatModels.ChatMessage)
-			msg.UserInfo = wsmd.ConInfo.(string)
+			msg.UserInfo = wsmd.ConInfo.(Dal.UserModel).UserInfo
 			msg.MemberID = wsmd.KeyID
 			msg.ChatNode = Conf.FilterChack(util.ToString(et["ChatMsg"]))
 			msg.CreateTime = util.GetCurrTimeSecond()

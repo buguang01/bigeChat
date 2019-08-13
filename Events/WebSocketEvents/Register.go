@@ -1,6 +1,7 @@
 package WebSocketEvents
 
 import (
+	"bigeChat/ChatModels"
 	"bigeChat/Code/ConstantCode"
 	"bigeChat/Dal"
 	"bigeChat/Service"
@@ -48,6 +49,7 @@ func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threa
 			mbbuf, _ := json.Marshal(mbmd.ToJson())
 			wsmd.ConInfo = string(mbbuf)
 			wsmd.KeyID = mid
+			wsmd.CloseFun = WebSocketClose
 			result = ConstantCode.Success
 		},
 		nil,
@@ -55,4 +57,15 @@ func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threa
 			event.WebSocketReplyMsg(wsmd, et, result, jsdata)
 		},
 	)
+}
+
+func WebSocketClose(wsmd *event.WebSocketModel) {
+	user, wsok := wsmd.ConInfo.(Dal.UserModel)
+	if !wsok {
+		return
+	}
+	for name, _ := range user.ChatLi {
+		chatmd := ChatModels.ChatEx.GetChat(name)
+		chatmd.PusDal(wsmd)
+	}
 }

@@ -55,7 +55,11 @@ func (this *ChatMD) AutoHander(ctx context.Context) {
 				this.pusList[msg.Conn.KeyID] = msg.Conn
 				this.firstmag(msg.Conn)
 			} else if msg.Ptype == 2 {
-				delete(this.pusList, msg.Conn.KeyID)
+				if ws, ok := this.pusList[msg.Conn.KeyID]; ok {
+					if ws == msg.Conn {
+						delete(this.pusList, msg.Conn.KeyID)
+					}
+				}
 			}
 		case msg := <-this.msgChan:
 			arr := make([]*ChatMessage, 1, 30)
