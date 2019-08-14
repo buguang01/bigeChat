@@ -21,6 +21,7 @@ const (
 	CHAT_WORLD   = "world"   //世界
 	CHAT_GROUP   = "group"   //群
 	CHAT_PRIVATE = "private" //私有
+	CHAT_SYSTEM  = "system"  //系统
 )
 
 var (
@@ -56,6 +57,8 @@ func (this *ChatManage) GetChat(name string) (result *ChatMD) {
 				md = NewChatMD(name, 2)
 			} else if strings.Contains(name, CHAT_PRIVATE) {
 				md = NewChatMD(name, 3)
+			} else if strings.Contains(name, CHAT_SYSTEM) {
+				md = NewChatMD(name, 4)
 			} else {
 				panic(errors.New(fmt.Sprintf("Not exist chat %s.", name)))
 			}

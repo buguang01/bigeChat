@@ -7,5 +7,6 @@ const (
 )
 
 const (
-	Nsqd_ListenUser = 1001 //监听用户
+	// Nsqd_ListenUser = 1001 //监听用户
+	Nsqd_SystemMsg = 949001 //发系统消息
 )

@@ -47,9 +47,11 @@ func NewChatMD(name string, ctype int) *ChatMD {
 //广播信息
 
 func (this *ChatMD) AutoHander(ctx context.Context) {
+hander:
 	for {
 		select {
 		case <-ctx.Done():
+			break hander
 		case msg := <-this.pusChan:
 			if msg.Ptype == 1 {
 				this.pusList[msg.Conn.KeyID] = msg.Conn

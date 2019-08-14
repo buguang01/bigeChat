@@ -67,6 +67,7 @@ func WsEventChatSendMsg(et event.JsonMap, wsmd *event.WebSocketModel, runobj *th
 		func() {
 			redis := Service.RedisEx.GetConn()
 			defer redis.Close()
+			//禁言的检查可以写在这里
 			msg := new(ChatModels.ChatMessage)
 			msg.UserInfo = wsmd.ConInfo.(Dal.UserModel).UserInfo
 			msg.MemberID = wsmd.KeyID

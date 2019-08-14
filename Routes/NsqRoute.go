@@ -14,7 +14,7 @@ import (
 func init() {
 	NsqRouteList = make(map[int]Models.NsqdLogicHander)
 
-	NsqRouteList[ActionCode.Nsqd_ListenUser] = NsqEvents.Nsqd_ListenUser
+	NsqRouteList[ActionCode.Nsqd_SystemMsg] = NsqEvents.Nsqd_SystemEvent
 }
 
 var (

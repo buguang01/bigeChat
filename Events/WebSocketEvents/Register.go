@@ -24,7 +24,10 @@ func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threa
 			mid := et.GetMemberID()
 			hash := et.GetHash()
 
-			//没找到用户的时候，从redis里读
+			//聊天的时候可能需要附加一些用户信息上去
+			//这些用户信息可以是别的服务器写在redis里的信息
+			//也可以是在注册的时候，附带过来的
+			//这里的例子是从redis里读
 			rinfo, err := redis.DictGet("MemberIDList", fmt.Sprintf("%d", mid))
 			if err != nil {
 				result = ConstantCode.Player_Not_Exist
