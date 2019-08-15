@@ -15,6 +15,12 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "options": {
+                "env": {
+                    "GOOS": "windows",
+                    "GOARCH": "amd64"
+                }
             }
         },
         {
