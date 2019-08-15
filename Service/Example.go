@@ -12,9 +12,9 @@ var (
 	RedisEx *model.RedisAccess         //redis管理器
 	GameEx  *runserver.GameServiceBase //系统模块管理器
 
-	DBEx     *module.SqlDataModule //DB操作模块
-	LogicEx  *module.LogicModule   //逻辑操作模块
-	MemoryEx *module.MemoryModule  //内存管理模块
+	// DBEx     *module.SqlDataModule //DB操作模块
+	LogicEx  *module.LogicModule  //逻辑操作模块
+	MemoryEx *module.MemoryModule //内存管理模块
 
 	// HTTPEx      *module.HTTPModule      //HTTP通信模块
 	WebSocketEx *module.WebSocketModule //ws通信模块

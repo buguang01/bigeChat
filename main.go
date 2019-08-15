@@ -56,7 +56,7 @@ func main() {
 	Service.GameEx.ServiceStopHander = Service.ServiceStop
 
 	// Service.DBEx = module.NewSqlDataModule(&conf.SqlConf, Service.MysqlEx.GetDB())
-	// Service.LogicEx = module.NewLogicModule(&conf.LogicConf)
+	Service.LogicEx = module.NewLogicModule(&conf.LogicConf)
 	Service.MemoryEx = module.NewMemoryModule(&conf.MemoryConf)
 
 	Service.WebSocketEx = module.NewWSModule(&conf.WsocketConf)
@@ -70,7 +70,7 @@ func main() {
 
 	// Service.GameEx.AddModule(Service.DBEx)
 	Service.GameEx.AddModule(Service.NsqdEx)
-	// Service.GameEx.AddModule(Service.LogicEx)
+	Service.GameEx.AddModule(Service.LogicEx)
 	Service.GameEx.AddModule(Service.MemoryEx)
 	Service.GameEx.AddModule(Service.WebSocketEx)
 	// Service.GameEx.AddModule(Service.HTTPEx)
