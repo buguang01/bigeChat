@@ -14,6 +14,7 @@ import (
 	"github.com/buguang01/bige/threads"
 )
 
+//监听聊天频道
 func WsEventChatPus(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threads.ThreadGo) {
 	jsdata := make(event.JsonMap)
 	result := ConstantCode.Timeout
@@ -36,6 +37,7 @@ func WsEventChatPus(et event.JsonMap, wsmd *event.WebSocketModel, runobj *thread
 	)
 }
 
+//取消监听聊天频道
 func WsEventChatCancelPus(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threads.ThreadGo) {
 	jsdata := make(event.JsonMap)
 	result := ConstantCode.Timeout
@@ -57,15 +59,18 @@ func WsEventChatCancelPus(et event.JsonMap, wsmd *event.WebSocketModel, runobj *
 	)
 }
 
+//心跳
 func WsEventChatDiDa(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threads.ThreadGo) {
 	event.WebSocketReplyMsg(wsmd, et, ConstantCode.Success, nil)
 }
 
+//发聊天信息
 func WsEventChatSendMsg(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threads.ThreadGo) {
 	jsdata := make(event.JsonMap)
 	result := ConstantCode.Timeout
 	threads.Try(
 		func() {
+			//检查是不是被禁言了
 			redis := Service.RedisEx.GetConn()
 			defer redis.Close()
 			if reply, err := redis.Get(fmt.Sprintf("ChatBan%d", wsmd.KeyID)); err == nil && reply != nil {

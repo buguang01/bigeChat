@@ -14,6 +14,7 @@ import (
 	"github.com/buguang01/bige/threads"
 )
 
+//注册连接
 func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threads.ThreadGo) {
 	jsdata := make(event.JsonMap)
 	result := ConstantCode.Timeout
@@ -62,6 +63,7 @@ func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threa
 	)
 }
 
+//连接断开的时候调用的方法
 func WebSocketClose(wsmd *event.WebSocketModel) {
 	user, wsok := wsmd.ConInfo.(Dal.UserModel)
 	if !wsok {
