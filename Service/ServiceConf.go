@@ -8,15 +8,15 @@ import (
 )
 
 type ServiceConf struct {
-	GameConf  runserver.GameConfigModel
-	DBConf    model.MysqlConfigModel
+	GameConf runserver.GameConfigModel
+	// DBConf    model.MysqlConfigModel
 	RedisConf model.RedisConfigModel
 
-	SqlConf    module.SqlDataConfig
+	// SqlConf    module.SqlDataConfig
 	LogicConf  module.LogicConfig
 	MemoryConf module.MemoryConfig
 
-	HttpConf    module.HTTPConfig
+	// HttpConf    module.HTTPConfig
 	NsqdConf    module.NsqdConfig
 	WsocketConf module.WebSocketConfig
 

@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	MysqlEx *model.MysqlAccess         //mysql管理器
+	// MysqlEx *model.MysqlAccess         //mysql管理器
 	RedisEx *model.RedisAccess         //redis管理器
 	GameEx  *runserver.GameServiceBase //系统模块管理器
 

@@ -1,7 +1,6 @@
 package Dal
 
 import (
-	"bigeChat/Service"
 	"time"
 
 	"github.com/buguang01/bige/event"
@@ -29,7 +28,7 @@ func (this *UpDataArgs) Add(sd event.ISqlDataModel) {
 }
 
 func (this *UpDataArgs) UpData() {
-	Service.DBEx.AddMsg(this.DataList...)
+	// Service.DBEx.AddMsg(this.DataList...)
 }
 
 type DalModel struct {
@@ -37,8 +36,9 @@ type DalModel struct {
 }
 
 func (this *DalModel) GetKeyID() int {
-	if Service.Sconf.SqlConf.InitNum == 0 {
-		return this.KeyID
-	}
-	return this.KeyID % Service.Sconf.SqlConf.InitNum
+	return this.KeyID
+	// if Service.Sconf.SqlConf.InitNum == 0 {
+	// 	return this.KeyID
+	// }
+	// return this.KeyID % Service.Sconf.SqlConf.InitNum
 }
