@@ -17,6 +17,18 @@ import (
 	"github.com/buguang01/util"
 )
 
+type IChatMD interface {
+	GetChatName() string
+	SetUpTime(time.Time)
+	GetUpTime() time.Time
+	GetTypeChat() int
+	GetLenPusList() int
+	AddMsg(msg *ChatMessage)
+	PusAdd(conn *event.WebSocketModel)
+	PusDel(conn *event.WebSocketModel)
+	event.IMemoryModel
+}
+
 //频道结构
 type ChatMD struct {
 	ChatName   string                        //频道名字
@@ -30,15 +42,16 @@ type ChatMD struct {
 	UpTime     time.Time //更新时间
 }
 
-func NewChatMD(name string, ctype int) *ChatMD {
+func NewChatMD(name string, ctype int) IChatMD {
 	result := new(ChatMD)
 	result.ChatName = name
 	result.TypeChat = ctype
 	result.pusList = make(map[int]*event.WebSocketModel)
 	result.queue = NewQueue()
 	result.CreateTime = util.GetCurrTimeSecond()
-	result.msgChan = make(chan *ChatMessage, 30)
-	result.pusChan = make(chan PusSetMsg, 30)
+	result.UpTime = util.GetCurrTimeSecond()
+	result.msgChan = make(chan *ChatMessage, result.queue.GetQueueLen())
+	result.pusChan = make(chan PusSetMsg, result.queue.GetQueueLen())
 	return result
 }
 
@@ -47,12 +60,15 @@ func NewChatMD(name string, ctype int) *ChatMD {
 //广播信息
 
 func (this *ChatMD) AutoHander(ctx context.Context) {
+	// temp := 3600 * time.Second
+	// tk := time.NewTimer(temp)
 hander:
 	for {
 		select {
 		case <-ctx.Done():
 			break hander
 		case msg := <-this.pusChan:
+			// tk.Reset(temp)
 			if msg.Ptype == 1 {
 				this.pusList[msg.Conn.KeyID] = msg.Conn
 				this.firstmag(msg.Conn)
@@ -64,10 +80,11 @@ hander:
 				}
 			}
 		case msg := <-this.msgChan:
-			arr := make([]*ChatMessage, 1, 30)
+			// tk.Reset(temp)
+			arr := make([]*ChatMessage, 1, this.queue.GetQueueLen())
 			arr[0] = msg
 		readall:
-			for len(arr) < 30 {
+			for len(arr) < this.queue.GetQueueLen() {
 				select {
 				case msg := <-this.msgChan:
 					arr = append(arr, msg)
@@ -117,7 +134,7 @@ func (this *ChatMD) PusAdd(conn *event.WebSocketModel) {
 	this.pusChan <- PusSetMsg{conn, 1}
 }
 
-func (this *ChatMD) PusDal(conn *event.WebSocketModel) {
+func (this *ChatMD) PusDel(conn *event.WebSocketModel) {
 	this.pusChan <- PusSetMsg{conn, 2}
 }
 
@@ -150,20 +167,38 @@ func (this *ChatMD) RunAutoEvents() {
 
 //时间到时，运行的方法,如果发出了委托，就返回true
 func (this *ChatMD) UnloadRun() bool {
-	// if this.player.ClientInfo == nil {
-	// Logger.PInfo("auto closeing")
-	// this.AutoTasks.CloseWait()
-	// if util.GetCurrTimeSecond().Sub(this.UpTime) > time.Duration(Service.Sconf.MemoryConf.RunTime)*time.Second {
+	if this.UpTime.Unix() == util.GetMinDateTime().Unix() {
+		this.threadgo.CloseWait()
+		Logger.PInfo("auto closeed by other.")
+		return true
+	}
 	if ChatEx.DelChat(this.ChatName) {
 		this.threadgo.CloseWait()
 		Logger.PInfo("auto closeed")
 		return true
 	}
 	return false
-	// }
+
 }
 
 //当服务关闭时，运行的方法，这个时候可能就不清内存了，只是关一些自动任务
 func (this *ChatMD) DoneRun() {
 	Logger.PInfo("DoneRun auto closeed")
+}
+
+func (this *ChatMD) GetChatName() string {
+	return this.ChatName
+}
+func (this *ChatMD) SetUpTime(dt time.Time) {
+	this.UpTime = dt
+}
+func (this *ChatMD) GetUpTime() time.Time {
+	return this.UpTime
+}
+func (this *ChatMD) GetLenPusList() int {
+	return len(this.pusList)
+}
+
+func (this *ChatMD) GetTypeChat() int {
+	return this.TypeChat
 }

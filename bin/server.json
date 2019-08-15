@@ -32,7 +32,7 @@
         "SubChanNum":10240
     },
     "MemoryConf":{
-        "RunTime":604800,
+        "RunTime":86400,
         "InitNum":10240,
         "ChanNum":128
     },

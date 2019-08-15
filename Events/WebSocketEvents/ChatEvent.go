@@ -6,6 +6,7 @@ import (
 	"bigeChat/Conf"
 	"bigeChat/Dal"
 	"bigeChat/Service"
+	"fmt"
 
 	"github.com/buguang01/util"
 
@@ -23,7 +24,7 @@ func WsEventChatPus(et event.JsonMap, wsmd *event.WebSocketModel, runobj *thread
 			for _, name := range arr {
 				chatmd := ChatModels.ChatEx.GetChat(util.ToString(name))
 				chatmd.PusAdd(wsmd)
-				user.ChatLi[chatmd.ChatName] = true
+				user.ChatLi[chatmd.GetChatName()] = true
 
 			}
 			result = ConstantCode.Success
@@ -44,8 +45,8 @@ func WsEventChatCancelPus(et event.JsonMap, wsmd *event.WebSocketModel, runobj *
 			user := wsmd.ConInfo.(Dal.UserModel)
 			for _, name := range arr {
 				chatmd := ChatModels.ChatEx.GetChat(util.ToString(name))
-				chatmd.PusDal(wsmd)
-				delete(user.ChatLi, chatmd.ChatName)
+				chatmd.PusDel(wsmd)
+				delete(user.ChatLi, chatmd.GetChatName())
 			}
 			result = ConstantCode.Success
 		},
@@ -67,7 +68,10 @@ func WsEventChatSendMsg(et event.JsonMap, wsmd *event.WebSocketModel, runobj *th
 		func() {
 			redis := Service.RedisEx.GetConn()
 			defer redis.Close()
-			//禁言的检查可以写在这里
+			if reply, err := redis.Get(fmt.Sprintf("ChatBan%d", wsmd.KeyID)); err == nil && reply != nil {
+				result = ConstantCode.Chat_Player_Ban
+				return
+			}
 			msg := new(ChatModels.ChatMessage)
 			msg.UserInfo = wsmd.ConInfo.(Dal.UserModel).UserInfo
 			msg.MemberID = wsmd.KeyID

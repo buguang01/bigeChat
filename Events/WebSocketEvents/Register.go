@@ -24,10 +24,7 @@ func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threa
 			mid := et.GetMemberID()
 			hash := et.GetHash()
 
-			//聊天的时候可能需要附加一些用户信息上去
-			//这些用户信息可以是别的服务器写在redis里的信息
-			//也可以是在注册的时候，附带过来的
-			//这里的例子是从redis里读
+			//没找到用户的时候，从redis里读
 			rinfo, err := redis.DictGet("MemberIDList", fmt.Sprintf("%d", mid))
 			if err != nil {
 				result = ConstantCode.Player_Not_Exist
@@ -44,14 +41,18 @@ func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threa
 				return
 			}
 
+			//读到后，再次检查
 			if hash != mbmd.HashKey {
 				result = ConstantCode.Player_Hash_Error
 				return
 			}
 			mbbuf, _ := json.Marshal(mbmd.ToJson())
-			wsmd.ConInfo = string(mbbuf)
+			user := Dal.NewUserModel()
+			user.UserInfo = string(mbbuf)
+			wsmd.ConInfo = user
 			wsmd.KeyID = mid
 			wsmd.CloseFun = WebSocketClose
+			ChatModels.ChatEx.RegisterPlayer(mid, wsmd)
 			result = ConstantCode.Success
 		},
 		nil,
@@ -68,6 +69,7 @@ func WebSocketClose(wsmd *event.WebSocketModel) {
 	}
 	for name, _ := range user.ChatLi {
 		chatmd := ChatModels.ChatEx.GetChat(name)
-		chatmd.PusDal(wsmd)
+		chatmd.PusDel(wsmd)
 	}
+	ChatModels.ChatEx.OfflinePlayer(wsmd.KeyID, wsmd)
 }

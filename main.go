@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bigeChat/Conf"
 	"bigeChat/Flag"
 	"bigeChat/Routes"
 	"bigeChat/Service"
 	"flag"
 	"io/ioutil"
 	"os"
+	"sync"
 
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/json"
@@ -58,8 +60,7 @@ func main() {
 	Service.MemoryEx = module.NewMemoryModule(&conf.MemoryConf)
 
 	Service.WebSocketEx = module.NewWSModule(&conf.WsocketConf)
-	//如果需要别的服务器与它进行沟通，就打开NSQ对应的代码
-	// Service.NsqdEx = module.NewNsqdModule(&conf.NsqdConf, conf.GameConf.ServiceID)
+	Service.NsqdEx = module.NewNsqdModule(&conf.NsqdConf, conf.GameConf.ServiceID)
 
 	// Service.HTTPEx = module.NewHTTPModule(&conf.HttpConf)
 
@@ -68,7 +69,7 @@ func main() {
 	Service.GoTreandEx = threads.NewThreadGo()
 
 	// Service.GameEx.AddModule(Service.DBEx)
-	// Service.GameEx.AddModule(Service.NsqdEx)
+	Service.GameEx.AddModule(Service.NsqdEx)
 	// Service.GameEx.AddModule(Service.LogicEx)
 	Service.GameEx.AddModule(Service.MemoryEx)
 	Service.GameEx.AddModule(Service.WebSocketEx)
@@ -86,7 +87,14 @@ func main() {
 //需要写入redis的操作等
 func InitData() {
 	Routes.WebSocketInit()
-	// Routes.NsqdInit()
+	Routes.NsqdInit()
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	threads.GoTry(func() {
+		Conf.InitLoad(wg)
+	}, nil, nil)
+	wg.Wait()
+
 	// Routes.HTTPInit()
 
 	// go http.ListenAndServe("0.0.0.0:6060", nil)

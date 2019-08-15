@@ -18,6 +18,10 @@ type ChatQueue struct {
 	elements     []*ChatMessage
 }
 
+func (queue *ChatQueue) GetQueueLen() int {
+	return queue.queueSize
+}
+
 /**
   指定大小的初始化
 */
@@ -75,7 +79,7 @@ func (queue *ChatQueue) IsFull() bool {
 /**
   出队一个元素
 */
-func (queue *ChatQueue) Poll() (interface{}, error) {
+func (queue *ChatQueue) Poll() (*ChatMessage, error) {
 	if queue.IsEmpty() == true {
 		return nil, errors.New("the queue is empty.")
 	}
@@ -112,6 +116,15 @@ func (queue *ChatQueue) Offer(e *ChatMessage) error {
 	queue.elements[queue.rear] = e
 	queue.currentCount = queue.currentCount + 1
 	return nil
+}
+
+//拿最新的一个成员，但是不出列
+func (queue *ChatQueue) GetEndNode() (*ChatMessage, error) {
+	if queue.IsEmpty() == true {
+		return nil, errors.New("the queue is empty.")
+	}
+	tmp := queue.front
+	return queue.elements[tmp], nil
 }
 
 type ChatMessage struct {

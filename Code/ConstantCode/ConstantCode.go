@@ -18,3 +18,8 @@ const (
 	Player_Not_Exist  = 3000 //用户不存在
 	Player_Hash_Error = 3001 //hash不对
 )
+
+//聊天错误码
+const (
+	Chat_Player_Ban = 2001 //用户被禁言
+)
