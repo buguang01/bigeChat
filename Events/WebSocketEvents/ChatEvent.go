@@ -81,7 +81,7 @@ func WsEventChatSendMsg(et event.JsonMap, wsmd *event.WebSocketModel, runobj *th
 			msg.UserInfo = wsmd.ConInfo.(Dal.UserModel).UserInfo
 			msg.MemberID = wsmd.KeyID
 			msg.ChatNode = Conf.FilterChack(util.ToString(et["ChatMsg"]))
-			msg.CreateTime = util.GetCurrTimeSecond()
+			msg.CreateTime = util.GetCurrTimeSecond().Unix()
 			name := util.ToString(et["ChatName"])
 			chatmd := ChatModels.ChatEx.GetChat(name)
 			chatmd.AddMsg(msg)

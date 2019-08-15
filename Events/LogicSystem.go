@@ -21,7 +21,7 @@ func (this *LogicSystem) Nsqd_SystemMsg(jsuser event.JsonMap) (result int) {
 	msg.UserInfo = ""
 	msg.MemberID = 0
 	msg.ChatNode = this.ChatMsg
-	msg.CreateTime = util.GetCurrTimeSecond()
+	msg.CreateTime = util.GetCurrTimeSecond().Unix()
 	chatmd := ChatModels.ChatEx.GetChat(this.ChatName)
 	chatmd.AddMsg(msg)
 	return result

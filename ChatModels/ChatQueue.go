@@ -2,7 +2,6 @@ package ChatModels
 
 import (
 	"errors"
-	"time"
 )
 
 const (
@@ -128,10 +127,10 @@ func (queue *ChatQueue) GetEndNode() (*ChatMessage, error) {
 }
 
 type ChatMessage struct {
-	UID        int       //主键
-	MemberID   int       //用户ID
-	UserInfo   string    //用户信息
-	ChatNode   string    //聊天内容
-	CreateTime time.Time //时间
+	UID        int    //主键
+	MemberID   int    //用户ID
+	UserInfo   string //用户信息
+	ChatNode   string //聊天内容
+	CreateTime int64  //时间
 
 }
