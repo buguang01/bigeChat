@@ -42,14 +42,14 @@ func WsEventRegister(et event.JsonMap, wsmd *event.WebSocketModel, runobj *threa
 				return
 			}
 
-			//读到后，再次检查
+			//用来检查其他服务器生成的用户这种登录的凭证，如果不需要，可以把有关代码都去了。
 			if hash != mbmd.HashKey {
 				result = ConstantCode.Player_Hash_Error
 				return
 			}
 			mbbuf, _ := json.Marshal(mbmd.ToJson())
 			user := Dal.NewUserModel()
-			user.UserInfo = string(mbbuf)
+			user.UserInfo = string(mbbuf) //那里面的信息除了hash外还有一些别的用来客户端显示的自定义信息，这里只用字符串保存一下，不解开了
 			wsmd.ConInfo = user
 			wsmd.KeyID = mid
 			wsmd.CloseFun = WebSocketClose
