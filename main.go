@@ -1,81 +1,84 @@
 package main
 
 import (
-	"bigeChat/Conf"
-	"bigeChat/Flag"
-	"bigeChat/Routes"
-	"bigeChat/Service"
+	"bigeChat/flags"
+	"bigeChat/routes"
+	"bigeChat/services"
+	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
-	"sync"
 
 	"github.com/buguang01/Logger"
-	"github.com/buguang01/bige/json"
 	"github.com/buguang01/bige/model"
-	"github.com/buguang01/bige/module"
-	"github.com/buguang01/bige/runserver"
-	"github.com/buguang01/bige/threads"
+	"github.com/buguang01/bige/modules"
+	"github.com/buguang01/util"
 )
 
 func main() {
-	Service.Sconf = new(Service.ServiceConf)
-	var conf = Service.Sconf
+	services.Sconf = new(services.ServiceConf)
 
 	if !flag.Parsed() {
 		flag.Parse()
 	}
 
-	f, err := os.Open(*Flag.Flagc)
+	f, err := os.Open(*flags.Flagc)
 	if err != nil {
 		panic(err)
 	}
 	b, _ := ioutil.ReadAll(f)
 	f.Close()
 
-	json.Unmarshal(b, &conf)
-	Logger.Init(conf.LogLv, conf.LogPath, conf.LogMode)
+	json.Unmarshal(b, services.Sconf)
+	Logger.Init(services.Sconf.LogLv, services.Sconf.LogPath, services.Sconf.LogMode)
 	defer Logger.LogClose()
 
-	// Service.MysqlEx = model.NewMysqlAccess(&conf.DBConf)
-	// defer Service.MysqlEx.Close()
-	// if err := Service.MysqlEx.Ping(); err != nil {
-	// 	Logger.PError(err, "")
-	// 	return
-	// }
-	Service.RedisEx = model.NewRedisAccess(&conf.RedisConf)
-	defer Service.RedisEx.Close()
-	c := Service.RedisEx.GetConn()
+	services.MysqlEx = model.NewMysqlAccess(&services.Sconf.DBConf)
+	defer services.MysqlEx.Close()
+	if err := services.MysqlEx.Ping(); err != nil {
+		Logger.PError(err, "")
+		return
+	}
+	services.RedisEx = model.NewRedisAccess(&services.Sconf.RedisConf)
+	defer services.RedisEx.Close()
+	c := services.RedisEx.GetConn()
 	if err := c.Err(); err != nil {
 		Logger.PError(err, "")
 		return
 	}
 	c.Close()
 
-	Service.GameEx = runserver.NewGameService(&conf.GameConf)
-	Service.GameEx.ServiceStopHander = Service.ServiceStop
-
-	// Service.DBEx = module.NewSqlDataModule(&conf.SqlConf, Service.MysqlEx.GetDB())
-	Service.LogicEx = module.NewLogicModule(&conf.LogicConf)
-	Service.MemoryEx = module.NewMemoryModule(&conf.MemoryConf)
-
-	Service.WebSocketEx = module.NewWSModule(&conf.WsocketConf)
-	Service.NsqdEx = module.NewNsqdModule(&conf.NsqdConf, conf.GameConf.ServiceID)
-
-	// Service.HTTPEx = module.NewHTTPModule(&conf.HttpConf)
-
-	// Service.WorkIDEx = util.NewIDGenerator().SetWorkerId(conf.WorkerId)
-	// Service.WorkIDEx.Init()
-	Service.GoTreandEx = threads.NewThreadGo()
-
-	// Service.GameEx.AddModule(Service.DBEx)
-	Service.GameEx.AddModule(Service.NsqdEx)
-	Service.GameEx.AddModule(Service.LogicEx)
-	Service.GameEx.AddModule(Service.MemoryEx)
-	Service.GameEx.AddModule(Service.WebSocketEx)
-	// Service.GameEx.AddModule(Service.HTTPEx)
+	services.DBEx = modules.NewDataBaseModule(services.MysqlEx.GetDB())
+	services.LogicEx = modules.NewLogicModule()
+	services.TaskEx = modules.NewAutoTaskModule()
+	services.NsqdEx = modules.NewNsqdModule(
+		modules.NsqdSetPorts(services.Sconf.NsqdAddr...),
+		modules.NsqdSetLookup(services.Sconf.NsqLookupdAddr...),
+		modules.NsqdSetMyTopic(util.ToString(services.Sconf.ServiceID)),
+		modules.NsqdSetMyChannelName(fmt.Sprintf("chancel_%d", services.Sconf.ServiceID)),
+		modules.NsqdSetRoute(routes.NsqdRoute),
+	)
+	services.WebEx = modules.NewWebModule(
+		modules.WebSetIpPort(services.Sconf.WebAddr),
+		modules.WebSetRoute(routes.WebRoute),
+		modules.WebSetTimeoutFunc(routes.WebTimeout),
+	)
+	services.WebSocketEx = modules.NewWebSocketModule(
+		modules.WebSocketSetIpPort(services.Sconf.WsAddr),
+		modules.WebSocketSetRoute(routes.WebSocketRoute),
+		modules.WebScoketSetOnlineFun(routes.WebScoketOnline),
+	)
+	services.GameEx.AddModule(
+		services.DBEx,
+		services.LogicEx,
+		services.TaskEx,
+		services.NsqdEx,
+		services.WebEx,
+		services.WebSocketEx,
+	)
 	InitData()
-	Service.GameEx.Run()
+	services.GameEx.Run()
 
 }
 
@@ -86,16 +89,18 @@ func main() {
 //初始化一些信息
 //需要写入redis的操作等
 func InitData() {
-	Routes.WebSocketInit()
-	Routes.NsqdInit()
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	threads.GoTry(func() {
-		Conf.InitLoad(wg)
-	}, nil, nil)
-	wg.Wait()
+	// wg := new(sync.WaitGroup)
+	// wg.Add(2)
+	// go Manage.UserManageEx.Load(wg)
+	// Conf.InitLoad(wg)
+	// wg.Wait()
+	// Service.GoTreand.Go(Route.AutoTask)
 
-	// Routes.HTTPInit()
-
+	// a := Models.HorselightModel{
+	// 	Text:  "test",
+	// 	Stime: util.GetCurrTimeSecond().Add(60 * time.Second).Unix(),
+	// 	Num:   10,
+	// }
+	// Manage.ServerEx.SetMsgHorselight(a)
 	// go http.ListenAndServe("0.0.0.0:6060", nil)
 }

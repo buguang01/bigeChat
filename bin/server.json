@@ -1,65 +1,29 @@
 {
-    "GameConf":{
-        "ServiceID":4,
-        "PStatusTime":10
+    "ServiceID": 101,
+    "PStatusTime": 10,
+    "LogLv": 0,
+    "LogPath": "logs",
+    "LogMode": 0,
+    "LogServerID": "2",
+    "DBConf": {
+        "Dsn": "root:123456@tcp(127.0.0.1:3306)/gamelog_db?charset=utf8mb4&parseTime=true",
+        "MaxOpenNum": 100,
+        "MaxIdleNum": 50,
+        "MaxLifetime": 600
     },
-    "DBConf":{
-        "Dsn":"root:123456@tcp(127.0.0.1:3306)/gamelog_db?charset=utf8mb4&parseTime=true",
-        "MaxOpenNum":100,
-        "MaxIdleNum":50,
-        "MaxLifetime":600
+    "RedisConf": {
+        "ConAddr": "127.0.0.1:6379",
+        "MaxActive": 1000,
+        "MaxIdle": 50,
+        "IdleTimeout": 600,
+        "Password": ""
     },
-    "RedisConf":{
-        "ConAddr":"127.0.0.1:6379",
-        "MaxActive":1000,
-        "MaxIdle":50,
-        "IdleTimeout":600,
-        "Password":""
-    },
-
-
-    "SqlConf":{
-        "Timeout":120,
-        "InitNum":80,
-        "ChanNum":10240,
-        "SubChanNum":10240,
-        "TranSave":true
-    },
-    "LogicConf":{
-        "Timeout":120,
-        "InitNum":80,
-        "ChanNum":10240,
-        "SubChanNum":10240
-    },
-    "MemoryConf":{
-        "RunTime":86400,
-        "InitNum":10240,
-        "ChanNum":128
-    },
-
-
-    "HttpConf":{
-        "HTTPAddr":":8080",
-        "Timeout":8,
-        "weburl":"uc.51yoyoyo.com"
-    },
-    "NsqdConf":{
-        "Addr":["127.0.0.1:4150"],
-        "NSQLookupdAddr":["127.0.0.1:4161"],
-        "ChanNum":102400,
-        "LookupdPollInterval":1000,
-        "MaxInFlight":1000
-    },
-    "WsocketConf":{
-        "Addr":"127.0.0.1:3004",
-        "Timeout":90,
-        "MsgMaxLen":10240
-    },
-
-    "WorkerId":4,
-   
-    "LogLv":0,
-    "LogPath":"logs",    
-    "LogMode":0,
-    "LogServerID":"2"
+    "NsqdAddr": [
+        "127.0.0.1:4150"
+    ],
+    "NsqLookupdAddr": [
+        "127.0.0.1:4161"
+    ],
+    "WebAddr": ":8080",
+    "WsAddr": ":8081"
 }
