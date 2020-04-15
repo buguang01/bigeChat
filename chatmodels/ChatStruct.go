@@ -1,16 +1,16 @@
 package ChatModels
 
 import (
+	"bigeChat/actioncode"
+	"bigeChat/constantcode"
 	"context"
 	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/buguang01/Logger"
-
 	"github.com/buguang01/bige/event"
-	"github.com/buguang01/util/threads"
-
+	"github.com/buguang01/bige/modules"
 	"github.com/buguang01/util"
 )
 
@@ -23,20 +23,20 @@ type IChatMD interface {
 	AddMsg(msg *ChatMessage)
 	PusAdd(conn *event.WebSocketModel)
 	PusDel(conn *event.WebSocketModel)
-	event.IMemoryModel
+	modules.IAutoTaskModel
 }
 
 //频道结构
 type ChatMD struct {
-	ChatName   string                        //频道名字
-	TypeChat   int                           //频道类型
-	pusList    map[int]*event.WebSocketModel //消费用户列表
-	queue      *ChatQueue                    //频道内消息
-	CreateTime time.Time                     //创建时间，用来判断是不是从0开始读
-	msgChan    chan *ChatMessage
-	pusChan    chan PusSetMsg //加消费用户
-	threadgo   *threads.ThreadGo
-	UpTime     time.Time //更新时间
+	ChatName               string                        //频道名字
+	TypeChat               int                           //频道类型
+	pusList                map[int]*event.WebSocketModel //消费用户列表
+	queue                  *ChatQueue                    //频道内消息
+	CreateTime             time.Time                     //创建时间，用来判断是不是从0开始读
+	msgChan                chan *ChatMessage
+	pusChan                chan PusSetMsg //加消费用户
+	UpTime                 time.Time      //更新时间
+	*modules.AutoTaskModel                //自动模块
 }
 
 func NewChatMD(name string, ctype int) IChatMD {
@@ -49,6 +49,7 @@ func NewChatMD(name string, ctype int) IChatMD {
 	result.UpTime = util.GetCurrTimeSecond()
 	result.msgChan = make(chan *ChatMessage, result.queue.GetQueueLen())
 	result.pusChan = make(chan PusSetMsg, result.queue.GetQueueLen())
+	result.Handle = result.AutoHander
 	return result
 }
 
@@ -97,8 +98,8 @@ hander:
 			}
 			//通知消费者
 			js := make(event.JsonMap)
-			js["ACTION"] = ActionCode.Ws_Chat_Notice
-			js["ACTIONCOM"] = ConstantCode.Success
+			js["ACTION"] = actioncode.Ws_Chat_Notice
+			js["ACTIONCOM"] = constantcode.Success
 			{
 				jsdata := make(event.JsonMap)
 				jd := make(event.JsonMap)
@@ -124,7 +125,7 @@ func (this *ChatMD) firstmag(conn *event.WebSocketModel) {
 	jd["Msgs"] = arr
 	jd["ChanName"] = this.ChatName
 	jsdata["Chat"] = jd
-	event.WebSocketSendMsg(conn, ConstantCode.Success, jsdata)
+	event.WebSocketSendMsg(conn, constantcode.Success, jsdata)
 }
 
 func (this *ChatMD) PusAdd(conn *event.WebSocketModel) {
@@ -149,18 +150,18 @@ func (this *ChatMD) GetKey() string {
 	return fmt.Sprintf("%s,%d", this.ChatName, this.CreateTime.Unix())
 }
 
-//确认加入到了管理器中后，用来开启，这个数据的一些自动任务
-//如果用这个方法本自来启动任务，就可以用对应的这些方法来关闭自动任务
-func (this *ChatMD) RunAutoEvents() {
-	if this.threadgo != nil {
-		this.threadgo.CloseWait()
-	}
-	this.threadgo = threads.NewThreadGoBySub(Service.GoTreandEx.Ctx)
-	this.threadgo.Go(this.AutoHander)
-	ChatEx.GetChat(this.ChatName)
+// //确认加入到了管理器中后，用来开启，这个数据的一些自动任务
+// //如果用这个方法本自来启动任务，就可以用对应的这些方法来关闭自动任务
+// func (this *ChatMD) RunAutoEvents() {
+// 	if this.threadgo != nil {
+// 		this.threadgo.CloseWait()
+// 	}
+// 	this.threadgo = threads.NewThreadGoBySub(services.ThGo.Ctx)
+// 	this.threadgo.Go(this.AutoHander)
+// 	ChatEx.GetChat(this.ChatName)
 
-	// Player_AutoInit(this)
-}
+// 	// Player_AutoInit(this)
+// }
 
 //时间到时，运行的方法,如果发出了委托，就返回true
 func (this *ChatMD) UnloadRun() bool {
@@ -198,4 +199,20 @@ func (this *ChatMD) GetLenPusList() int {
 
 func (this *ChatMD) GetTypeChat() int {
 	return this.TypeChat
+}
+
+//任务名字（唯一性）
+func (this *ChatMD) GetTaskName() string {
+	return this.ChatName
+}
+
+//开始任务
+func (this *ChatMD) Start(mod *modules.AutoTaskModule) {
+	this.AutoTaskModel.Start(mod)
+	// if this.threadgo != nil {
+	// 	this.threadgo.CloseWait()
+	// }
+	// this.threadgo = mod. //threads.NewThreadGoBySub(services.ThGo.Ctx)
+	// 			this.threadgo.Go(this.AutoHander)
+	ChatEx.GetChat(this.ChatName)
 }

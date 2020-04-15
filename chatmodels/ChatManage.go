@@ -1,11 +1,11 @@
 package ChatModels
 
 import (
+	"bigeChat/services"
 	"errors"
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/buguang01/bige/event"
 	"github.com/buguang01/util"
@@ -52,7 +52,7 @@ func (this *ChatManage) GetChat(name string) (result IChatMD) {
 	util.UsingRead(this.maplock, func() {
 		if md, ok := this.chatli[name]; ok {
 			result = md
-			Service.MemoryEx.AddListenMsg(md)
+			services.TaskEx.AddTask(md)
 		}
 	})
 	if result != nil {
@@ -62,7 +62,8 @@ func (this *ChatManage) GetChat(name string) (result IChatMD) {
 		if md, ok := this.chatli[name]; ok {
 			result = md
 			md.SetUpTime(util.GetCurrTimeSecond())
-			Service.MemoryEx.AddListenMsg(md)
+			services.TaskEx.AddTask(md)
+			// Service.MemoryEx.AddListenMsg(md)
 			return
 		} else {
 			if strings.Contains(name, CHAT_WORLD) {
@@ -85,7 +86,8 @@ func (this *ChatManage) GetChat(name string) (result IChatMD) {
 			this.chatli[name] = md
 			result = md
 			md.SetUpTime(util.GetCurrTimeSecond())
-			Service.MemoryEx.AddListenMsg(md)
+			services.TaskEx.AddTask(md)
+			// Service.MemoryEx.AddListenMsg(md)
 		}
 	})
 
@@ -100,9 +102,11 @@ func (this *ChatManage) DelChat(name string) (result bool) {
 		if ok {
 			if md.GetLenPusList() > 0 {
 				return
-			} else if util.GetCurrTimeSecond().Sub(md.GetUpTime()) <= time.Duration(Service.Sconf.MemoryConf.RunTime)*time.Second {
-				return
 			}
+			//这个逻辑还是要的
+			// else if util.GetCurrTimeSecond().Sub(md.GetUpTime()) <= time.Duration(Service.Sconf.MemoryConf.RunTime)*time.Second {
+			// 	return
+			// }
 			delete(this.chatli, name)
 			md.SetUpTime(util.GetMinDateTime())
 			if md.GetTypeChat() == 3 { //私聊
