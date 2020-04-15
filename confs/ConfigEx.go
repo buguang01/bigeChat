@@ -25,6 +25,7 @@ var (
 
 //ConfigModel配置表
 type ConfigModel struct {
+	*ConfigFilter
 	// *ConfigMap
 	// *ConfigGame
 	// *ConfigFurn
