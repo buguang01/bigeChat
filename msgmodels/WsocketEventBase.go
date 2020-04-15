@@ -29,7 +29,7 @@ func NewWsocketResult(msg messages.IWebSocketMessageHandle, actioncom int, jsuse
 	return md
 }
 
-//nsqd消息的处理包装
+//ws消息的处理包装
 func WsocketTryRun(msg messages.IWebSocketMessageHandle, ws *messages.WebSocketModel, f func() (jsuser H, result int)) {
 	var resultmsg *WsocketResult
 	threads.Try(

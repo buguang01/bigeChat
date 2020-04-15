@@ -3,23 +3,26 @@ package services
 import (
 	"time"
 
+	"github.com/buguang01/util/threads"
+
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/model"
 	"github.com/buguang01/bige/modules"
 )
 
 var (
-	Sconf   *ServiceConf
-	MysqlEx *model.MysqlAccess   //mysql管理器
+	Sconf *ServiceConf
+	// MysqlEx *model.MysqlAccess   //mysql管理器
 	RedisEx *model.RedisAccess   //redis管理器
 	GameEx  *modules.GameService //系统模块管理器
 
-	DBEx        *modules.DataBaseModule  //DB操作模块
-	LogicEx     *modules.LogicModule     //逻辑操作模块
-	TaskEx      *modules.AutoTaskModule  //内存管理模块
-	NsqdEx      *modules.NsqdModule      //nsq消息队列通信模块
-	WebEx       *modules.WebModule       //HTTP通信模块
+	// DBEx        *modules.DataBaseModule  //DB操作模块
+	LogicEx *modules.LogicModule    //逻辑操作模块
+	TaskEx  *modules.AutoTaskModule //内存管理模块
+	NsqdEx  *modules.NsqdModule     //nsq消息队列通信模块
+	// WebEx       *modules.WebModule       //HTTP通信模块
 	WebSocketEx *modules.WebSocketModule //ws通信模块
+	ThGo        *threads.ThreadGo
 )
 
 type ServiceConf struct {

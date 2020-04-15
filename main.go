@@ -14,6 +14,7 @@ import (
 	"github.com/buguang01/bige/model"
 	"github.com/buguang01/bige/modules"
 	"github.com/buguang01/util"
+	"github.com/buguang01/util/threads"
 )
 
 func main() {
@@ -34,12 +35,12 @@ func main() {
 	Logger.Init(services.Sconf.LogLv, services.Sconf.LogPath, services.Sconf.LogMode)
 	defer Logger.LogClose()
 
-	services.MysqlEx = model.NewMysqlAccess(&services.Sconf.DBConf)
-	defer services.MysqlEx.Close()
-	if err := services.MysqlEx.Ping(); err != nil {
-		Logger.PError(err, "")
-		return
-	}
+	// services.MysqlEx = model.NewMysqlAccess(&services.Sconf.DBConf)
+	// defer services.MysqlEx.Close()
+	// if err := services.MysqlEx.Ping(); err != nil {
+	// 	Logger.PError(err, "")
+	// 	return
+	// }
 	services.RedisEx = model.NewRedisAccess(&services.Sconf.RedisConf)
 	defer services.RedisEx.Close()
 	c := services.RedisEx.GetConn()
@@ -49,7 +50,8 @@ func main() {
 	}
 	c.Close()
 
-	services.DBEx = modules.NewDataBaseModule(services.MysqlEx.GetDB())
+	services.ThGo = threads.NewThreadGo()
+	// services.DBEx = modules.NewDataBaseModule(services.MysqlEx.GetDB())
 	services.LogicEx = modules.NewLogicModule()
 	services.TaskEx = modules.NewAutoTaskModule()
 	services.NsqdEx = modules.NewNsqdModule(
@@ -59,22 +61,22 @@ func main() {
 		modules.NsqdSetMyChannelName(fmt.Sprintf("chancel_%d", services.Sconf.ServiceID)),
 		modules.NsqdSetRoute(routes.NsqdRoute),
 	)
-	services.WebEx = modules.NewWebModule(
-		modules.WebSetIpPort(services.Sconf.WebAddr),
-		modules.WebSetRoute(routes.WebRoute),
-		modules.WebSetTimeoutFunc(routes.WebTimeout),
-	)
+	// services.WebEx = modules.NewWebModule(
+	// 	modules.WebSetIpPort(services.Sconf.WebAddr),
+	// 	modules.WebSetRoute(routes.WebRoute),
+	// 	modules.WebSetTimeoutFunc(routes.WebTimeout),
+	// )
 	services.WebSocketEx = modules.NewWebSocketModule(
 		modules.WebSocketSetIpPort(services.Sconf.WsAddr),
 		modules.WebSocketSetRoute(routes.WebSocketRoute),
 		modules.WebScoketSetOnlineFun(routes.WebScoketOnline),
 	)
 	services.GameEx.AddModule(
-		services.DBEx,
+		// services.DBEx,
 		services.LogicEx,
 		services.TaskEx,
 		services.NsqdEx,
-		services.WebEx,
+		// services.WebEx,
 		services.WebSocketEx,
 	)
 	InitData()
