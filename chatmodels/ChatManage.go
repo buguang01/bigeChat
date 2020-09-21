@@ -52,12 +52,13 @@ func (this *ChatManage) GetChat(name string) (result IChatMD) {
 	util.UsingRead(this.maplock, func() {
 		if md, ok := this.chatli[name]; ok {
 			result = md
-			services.TaskEx.AddTask(md)
+			// services.TaskEx.AddTask(md)
 		}
 	})
 	if result != nil {
 		return result
 	}
+	//聊天频道的管理需要重新考虑逻辑
 	util.UsingWiter(this.maplock, func() {
 		if md, ok := this.chatli[name]; ok {
 			result = md
